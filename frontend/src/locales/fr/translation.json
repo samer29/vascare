@@ -1,0 +1,16 @@
+{
+  "dashboard": {
+    "totalPatients": "Total Patients",
+    "todayConsultations": "Consultations Aujourd'hui",
+    "monthlyRevenue": "Revenu Mensuel",
+    "totalConsultations": "Total Consultations",
+    "quickActions": "Actions Rapides",
+    "quickAccessDescription": "Accédez rapidement aux fonctionnalités principales",
+    "newPatient": "Nouveau Patient",
+    "viewPatients": "Voir Patients",
+    "billing": "Facturation",
+    "settings": "Paramètres",
+    "welcome": "Bienvenue, {{name}}",
+    "welcomeDescription": "Gérez efficacement votre cabinet médical avec cet outil complet"
+  }
+}

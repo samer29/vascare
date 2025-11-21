@@ -1,0 +1,16 @@
+{
+  "dashboard": {
+    "totalPatients": "Total Patients",
+    "todayConsultations": "Today's Consultations",
+    "monthlyRevenue": "Monthly Revenue",
+    "totalConsultations": "Total Consultations",
+    "quickActions": "Quick Actions",
+    "quickAccessDescription": "Quickly access main features",
+    "newPatient": "New Patient",
+    "viewPatients": "View Patients",
+    "billing": "Billing",
+    "settings": "Settings",
+    "welcome": "Welcome, {{name}}",
+    "welcomeDescription": "Manage your medical practice efficiently with this comprehensive tool"
+  }
+}
