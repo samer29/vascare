@@ -9,6 +9,9 @@ const EchographiePDF = ({
   consultation = {},
   echographieForm = {},
   echoType = "normal_h",
+  boldFields = {},
+  hiddenFields = {},
+  customFields = {},
 }) => {
   const pageRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -16,7 +19,7 @@ const EchographiePDF = ({
   const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   const safe = (text) => (text && text.toString().trim() !== "" ? text : "—");
 
-  const renderList = (items) => {
+  const renderList = (items, isBold = false) => {
     if (!Array.isArray(items)) return safe(items);
 
     const filteredItems = items.filter(
@@ -28,7 +31,13 @@ const EchographiePDF = ({
         {filteredItems.map((item, i) => (
           <li
             key={i}
-            style={{ lineHeight: "1.4", marginBottom: "1mm", fontSize: "11pt" }}
+            style={{
+              lineHeight: "1.4",
+              marginBottom: "1mm",
+              fontSize: isBold ? "12pt" : "11pt",
+              fontWeight: isBold ? "bold" : "normal",
+              color: isBold ? "#000" : "inherit",
+            }}
           >
             - {safe(item)}
           </li>
@@ -47,24 +56,26 @@ const EchographiePDF = ({
         { key: "Vesicule_biliaire", label: "Vésicule Biliaire" },
         { key: "Voies_biliaires", label: "Voies Biliaires" },
         { key: "TP_VCI_VSH", label: "TP, VCI et VSH" },
-        { key: "Reins", label: "Reins (droit et gauche)" },
+        { key: "Rein_droite", label: "Rein Droit" },
+        { key: "Rein_gauche", label: "Rein Gauche" },
         { key: "Pancreas", label: "Pancréas" },
         { key: "Rate", label: "Rate" },
         { key: "Vessie", label: "Vessie" },
         { key: "Prostate", label: "Prostate" },
-        { key: "Conclusion", label: "Conclusion" },
+        { key: "Conclusion", label: "Conclusion", isConclusion: true },
       ],
       normal_f: [
         { key: "Foie", label: "Foie" },
         { key: "Vesicule_biliaire", label: "Vésicule Biliaire" },
         { key: "Voies_biliaires", label: "Voies Biliaires" },
         { key: "TP_VCI_VSH", label: "TP, VCI et VSH" },
-        { key: "Reins", label: "Reins (droit et gauche)" },
+        { key: "Rein_droite", label: "Rein Droit" },
+        { key: "Rein_gauche", label: "Rein Gauche" },
         { key: "Pancreas", label: "Pancréas" },
         { key: "Rate", label: "Rate" },
         { key: "Vessie", label: "Vessie" },
         { key: "Utérus", label: "Utérus" },
-        { key: "Conclusion", label: "Conclusion" },
+        { key: "Conclusion", label: "Conclusion", isConclusion: true },
       ],
       lithiase_h: [
         { key: "Aérocolie_diffuse", label: "Aérocolie diffuse+++" },
@@ -75,7 +86,7 @@ const EchographiePDF = ({
         { key: "Foie", label: "Foie" },
         { key: "Rate", label: "Rate" },
         { key: "Pancreas", label: "Pancréas" },
-        { key: "Conclusion", label: "Conclusion" },
+        { key: "Conclusion", label: "Conclusion", isConclusion: true },
       ],
       lithiase_f: [
         { key: "Aérocolie_diffuse", label: "Aérocolie diffuse+++" },
@@ -86,11 +97,20 @@ const EchographiePDF = ({
         { key: "Foie", label: "Foie" },
         { key: "Rate", label: "Rate" },
         { key: "Pancreas", label: "Pancréas" },
-        { key: "Conclusion", label: "Conclusion" },
+        { key: "Conclusion", label: "Conclusion", isConclusion: true },
       ],
     };
 
-    return fieldConfigs[echoType] || fieldConfigs.normal_h;
+    const defaultFields = fieldConfigs[echoType] || fieldConfigs.normal_h;
+
+    // Add custom fields
+    const customFieldList = Object.keys(customFields).map((fieldKey) => ({
+      key: fieldKey,
+      label: customFields[fieldKey].label,
+      isCustom: true,
+    }));
+
+    return [...defaultFields, ...customFieldList];
   };
 
   const handleGeneratePDF = async () => {
@@ -101,7 +121,7 @@ const EchographiePDF = ({
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: "a4", // Changed to A4
+        format: "a4",
       });
 
       // Render transparent text layer
@@ -139,6 +159,10 @@ const EchographiePDF = ({
     return fieldData.some((item) => item && item.toString().trim() !== "");
   };
 
+  const fieldsToRender = getFieldsToRender().filter(
+    ({ key }) => !hiddenFields[key] && hasContent(key)
+  );
+
   return (
     <div>
       <button
@@ -160,13 +184,13 @@ const EchographiePDF = ({
           position: "absolute",
           left: "-9999px",
           top: 0,
-          width: "210mm", // A4 width
-          height: "297mm", // A4 height
-          padding: "15mm 20mm", // More padding for A4
+          width: "210mm",
+          height: "297mm",
+          padding: "15mm 20mm",
           boxSizing: "border-box",
           fontFamily: "'Century Gothic', 'Arial Narrow', Arial, sans-serif",
-          fontSize: "12pt", // Larger font size
-          lineHeight: 1.4, // Better line spacing
+          fontSize: "12pt",
+          lineHeight: 1.4,
           color: "#000",
         }}
       >
@@ -175,8 +199,8 @@ const EchographiePDF = ({
           style={{
             textAlign: "center",
             fontWeight: "bold",
-            margin: "22mm 0 6mm 0",
-            fontSize: "16pt", // Larger header
+            margin: "20mm 0 4mm 0",
+            fontSize: "16pt",
             textTransform: "uppercase",
           }}
         >
@@ -188,7 +212,7 @@ const EchographiePDF = ({
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: "2mm",
+            marginBottom: "1mm",
             fontSize: "12pt",
           }}
         >
@@ -202,7 +226,7 @@ const EchographiePDF = ({
         </div>
 
         {/* Age */}
-        <p style={{ margin: "0 0 2mm 0", fontSize: "12pt" }}>
+        <p style={{ margin: "0 0 1mm 0", fontSize: "12pt" }}>
           <b>Âge :</b> {calculateAge(patient.dob)} ans
         </p>
 
@@ -213,7 +237,7 @@ const EchographiePDF = ({
             justifyContent: "space-between",
             alignItems: "flex-start",
             gap: "10mm",
-            marginBottom: "6mm",
+            marginBottom: "3mm",
           }}
         >
           <div style={{ flex: 1 }}>
@@ -227,51 +251,59 @@ const EchographiePDF = ({
             </p>
           </div>
         </div>
+
         {/* Echographie Results - Better spacing */}
-        <div style={{ marginBottom: "2mm" }}>
+        <div style={{ marginBottom: "1mm" }}>
           <h3
             style={{
               fontWeight: "bold",
               textAlign: "center",
-              marginBottom: "2mm",
+              marginBottom: "1mm",
               borderBottom: "0.5mm solid #000",
-              paddingBottom: "2mm",
-              fontSize: "14pt", // Larger section header
+              paddingBottom: "1mm",
+              fontSize: "14pt",
             }}
           >
             RÉSULTATS
           </h3>
 
           {/* Dynamic Fields Based on Echo Type - Better spacing */}
-          {getFieldsToRender().map(({ key, label }) => {
-            // Skip fields that have no content
-            if (!hasContent(key)) return null;
+          {fieldsToRender.map(({ key, label, isConclusion }) => {
+            const isBold = boldFields[key] || false;
 
             return (
-              <div key={key} style={{ marginBottom: "2mm" }}>
+              <div
+                key={key}
+                style={{ marginBottom: isConclusion ? "4mm" : "1mm" }}
+              >
                 <h4
                   style={{
-                    fontWeight: "bold",
-                    marginBottom: "2mm",
-                    fontSize: "12pt", // Larger field labels
+                    fontWeight: isConclusion ? "bold" : "bold",
+                    marginBottom: "1mm",
+                    fontSize: isConclusion ? "15pt" : "12pt",
+                    color: isConclusion ? "#000" : "inherit",
+                    textDecoration: isConclusion ? "underline" : "none",
                   }}
                 >
                   {label} :
                 </h4>
-                {renderList(echographieForm[key] || [])}
+                {renderList(echographieForm[key] || [], isBold)}
+
+                {/* Add extra spacing after conclusion */}
+                {isConclusion && <div style={{ height: "2mm" }} />}
               </div>
             );
           })}
 
           {/* Show message if no fields have content */}
-          {getFieldsToRender().every(({ key }) => !hasContent(key)) && (
+          {fieldsToRender.length === 0 && (
             <div
               style={{
                 textAlign: "center",
                 fontStyle: "italic",
                 color: "#666",
                 fontSize: "12pt",
-                marginTop: "10mm",
+                marginTop: "5mm",
               }}
             >
               Aucun résultat saisi pour cette échographie.

@@ -10,6 +10,8 @@ const ThyroidePDF = ({
   consultation = {},
   thyroideForm = {},
   thyroideType = "avec_schema",
+  boldFields = {},
+  hiddenFields = {},
 }) => {
   const pageRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -17,7 +19,7 @@ const ThyroidePDF = ({
   const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   const safe = (text) => (text && text.toString().trim() !== "" ? text : "—");
 
-  const renderList = (items) => {
+  const renderList = (items, isBold = false) => {
     if (!Array.isArray(items)) return safe(items);
 
     const filteredItems = items.filter(
@@ -29,7 +31,13 @@ const ThyroidePDF = ({
         {filteredItems.map((item, i) => (
           <li
             key={i}
-            style={{ lineHeight: "1.4", marginBottom: "1mm", fontSize: "11pt" }}
+            style={{
+              lineHeight: "1.4",
+              marginBottom: "1mm",
+              fontSize: isBold ? "12pt" : "11pt",
+              fontWeight: isBold ? "bold" : "normal",
+              color: isBold ? "#000" : "inherit",
+            }}
           >
             {safe(item)}
           </li>
@@ -137,6 +145,27 @@ const ThyroidePDF = ({
     return fieldData.some((item) => item && item.toString().trim() !== "");
   };
 
+  // Helper function to get display label for custom fields
+  const getDisplayLabel = (fieldKey) => {
+    if (fieldKey.startsWith("custom_")) {
+      return fieldKey.replace("custom_", "").toUpperCase();
+    }
+
+    const labels = {
+      Indication: "INDICATION",
+      Technique: "TECHNIQUE",
+      Resultats: "RÉSULTATS",
+      Conclusion: "CONCLUSION",
+      CAT: "CONDUITE À TENIR",
+    };
+
+    return labels[fieldKey] || fieldKey;
+  };
+
+  const fieldsToRender = getFieldsToRender().filter(
+    ({ key }) => !hiddenFields[key] && hasContent(key)
+  );
+
   return (
     <div>
       <button
@@ -229,29 +258,37 @@ const ThyroidePDF = ({
         {/* Thyroide Results - Better spacing */}
         <div style={{ marginBottom: "2mm" }}>
           {/* Dynamic Fields Based on Thyroide Type - Better spacing */}
-          {getFieldsToRender().map(({ key, label }) => {
-            // Skip fields that have no content
-            if (!hasContent(key)) return null;
+          {fieldsToRender.map(({ key }) => {
+            const isBold = boldFields[key] || false;
+            const isConclusion = key.toLowerCase().includes("conclusion");
 
             return (
-              <div key={key} style={{ marginBottom: "3mm" }}>
+              <div
+                key={key}
+                style={{ marginBottom: isConclusion ? "4mm" : "3mm" }}
+              >
                 <h4
                   style={{
-                    fontWeight: "bold",
+                    fontWeight: isConclusion ? "bold" : "bold",
                     marginBottom: "2mm",
-                    fontSize: "12pt",
+                    fontSize: isConclusion ? "13pt" : "12pt",
                     textTransform: "uppercase",
+                    color: isConclusion ? "#000" : "inherit",
+                    textDecoration: isConclusion ? "underline" : "none",
                   }}
                 >
-                  {label} :
+                  {getDisplayLabel(key)} :
                 </h4>
-                {renderList(thyroideForm[key] || [])}
+                {renderList(thyroideForm[key] || [], isBold)}
+
+                {/* Add extra spacing after conclusion */}
+                {isConclusion && <div style={{ height: "2mm" }} />}
               </div>
             );
           })}
 
           {/* Show message if no fields have content */}
-          {getFieldsToRender().every(({ key }) => !hasContent(key)) && (
+          {fieldsToRender.length === 0 && (
             <div
               style={{
                 textAlign: "center",

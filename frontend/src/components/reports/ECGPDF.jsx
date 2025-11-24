@@ -4,14 +4,21 @@ import html2canvas from "html2canvas";
 import backgroundImage from "../../assets/background.png";
 import { calculateAge, formatDate } from "../../utils/data";
 
-const ECGPDF = ({ patient = {}, consultation = {}, ecgForm = {} }) => {
+const ECGPDF = ({ 
+  patient = {}, 
+  consultation = {}, 
+  ecgForm = {},
+  boldFields = {},
+  hiddenFields = {},
+  customFields = [] 
+}) => {
   const pageRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   const safe = (text) => (text && text.toString().trim() !== "" ? text : "—");
 
-  const renderList = (items) => {
+  const renderList = (items, isBold = false) => {
     if (!Array.isArray(items)) return safe(items);
 
     const filteredItems = items.filter(
@@ -23,7 +30,13 @@ const ECGPDF = ({ patient = {}, consultation = {}, ecgForm = {} }) => {
         {filteredItems.map((item, i) => (
           <li
             key={i}
-            style={{ lineHeight: "1.4", marginBottom: "1mm", fontSize: "11pt" }}
+            style={{ 
+              lineHeight: "1.4", 
+              marginBottom: "1mm", 
+              fontSize: isBold ? "12pt" : "11pt",
+              fontWeight: isBold ? "bold" : "normal",
+              color: isBold ? "#000" : "inherit"
+            }}
           >
             - {safe(item)}
           </li>
@@ -39,6 +52,23 @@ const ECGPDF = ({ patient = {}, consultation = {}, ecgForm = {} }) => {
     const fieldData = ecgForm[fieldKey];
     if (!fieldData || !Array.isArray(fieldData)) return false;
     return fieldData.some((item) => item && item.toString().trim() !== "");
+  };
+
+  // Get all fields including custom fields
+  const getAllFields = () => {
+    const defaultFields = [
+      { key: "Examen", label: "EXAMEN" },
+      { key: "Electrocardiogramme", label: "Electrocardiogramme" },
+      { key: "Conclusion", label: "CONCLUSION" },
+    ];
+
+    const customFieldList = customFields.map(field => ({
+      key: field.key,
+      label: field.label.toUpperCase(),
+      isCustom: true
+    }));
+
+    return [...defaultFields, ...customFieldList];
   };
 
   const handleGeneratePDF = async () => {
@@ -76,11 +106,10 @@ const ECGPDF = ({ patient = {}, consultation = {}, ecgForm = {} }) => {
     }
   };
 
-  const fieldsWithContent = [
-    { key: "Examen", label: "EXAMEN" },
-    { key: "Electrocardiogramme", label: "Electrocardiogramme" },
-    { key: "Conclusion", label: "CONCLUSION" },
-  ].filter(({ key }) => hasContent(key));
+  const allFields = getAllFields();
+  const fieldsWithContent = allFields.filter(({ key }) => 
+    !hiddenFields[key] && hasContent(key)
+  );
 
   return (
     <div>
@@ -187,20 +216,30 @@ const ECGPDF = ({ patient = {}, consultation = {}, ecgForm = {} }) => {
           </h3>
 
           {/* Dynamic Fields */}
-          {fieldsWithContent.map(({ key, label }) => (
-            <div key={key} style={{ marginBottom: "4mm" }}>
-              <h4
-                style={{
-                  fontWeight: "bold",
-                  marginBottom: "2mm",
-                  fontSize: "12pt",
-                }}
-              >
-                {label} :
-              </h4>
-              {renderList(ecgForm[key] || [])}
-            </div>
-          ))}
+          {fieldsWithContent.map(({ key, label }) => {
+            const isBold = boldFields[key] || false;
+            const isConclusion = key.toLowerCase().includes('conclusion');
+            
+            return (
+              <div key={key} style={{ marginBottom: isConclusion ? "4mm" : "2mm" }}>
+                <h4
+                  style={{
+                    fontWeight: isConclusion ? "bold" : "bold",
+                    marginBottom: "2mm",
+                    fontSize: isConclusion ? "13pt" : "12pt",
+                    color: isConclusion ? "#000" : "inherit",
+                    textDecoration: isConclusion ? "underline" : "none"
+                  }}
+                >
+                  {label} :
+                </h4>
+                {renderList(ecgForm[key] || [], isBold)}
+                
+                {/* Add extra spacing after conclusion */}
+                {isConclusion && <div style={{ height: "2mm" }} />}
+              </div>
+            );
+          })}
 
           {/* Show message if no fields have content */}
           {fieldsWithContent.length === 0 && (

@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6b388da3.css",
+    "main.js": "/static/js/main.327e005f.js",
+    "static/js/213.69a5e8d8.chunk.js": "/static/js/213.69a5e8d8.chunk.js",
+    "static/js/455.9f396b8c.chunk.js": "/static/js/455.9f396b8c.chunk.js",
+    "static/js/453.8701dc61.chunk.js": "/static/js/453.8701dc61.chunk.js",
+    "static/media/background.png": "/static/media/background.f9fb5e415025df43dc84.png",
+    "static/media/backgroundA5.png": "/static/media/backgroundA5.3b352633c8cff24fa885.png",
+    "static/media/backgroundOrdonnace.png": "/static/media/backgroundOrdonnace.b606299e2f95aa82e895.png",
+    "static/media/logoDrbradai.png": "/static/media/logoDrbradai.242a4e784e8c2fab9788.png",
+    "static/media/logoDrbradaiWhite.png": "/static/media/logoDrbradaiWhite.db9647aa98956b9cf2f3.png",
+    "static/media/schema.png": "/static/media/schema.2d1f399fc6ded51cf474.png",
+    "static/media/MediConnect.png": "/static/media/MediConnect.4bc49ae8b4579fe050f1.png",
+    "index.html": "/index.html",
+    "main.6b388da3.css.map": "/static/css/main.6b388da3.css.map",
+    "main.327e005f.js.map": "/static/js/main.327e005f.js.map",
+    "213.69a5e8d8.chunk.js.map": "/static/js/213.69a5e8d8.chunk.js.map",
+    "455.9f396b8c.chunk.js.map": "/static/js/455.9f396b8c.chunk.js.map",
+    "453.8701dc61.chunk.js.map": "/static/js/453.8701dc61.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6b388da3.css",
+    "static/js/main.327e005f.js"
+  ]
+}

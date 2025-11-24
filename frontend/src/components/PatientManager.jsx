@@ -2694,22 +2694,15 @@ const PatientDetail = ({
                   Date de début
                 </label>
                 <input
-                  type="text"
-                  value={fixUTCDateToLocal(certificatDate)} // ✅ Use your function here
-                  onChange={(e) => {
-                    // Allow typing like 27/10/2025
-                    const inputValue = e.target.value;
-                    // Convert DD/MM/YYYY back to YYYY-MM-DD for storage
-                    if (inputValue.includes("/")) {
-                      const [day, month, year] = inputValue.split("/");
-                      setCertificatDate(`${year}-${month}-${day}`);
-                    } else {
-                      setCertificatDate(inputValue);
-                    }
-                  }}
-                  placeholder="jj/mm/aaaa"
+                  type="date"
+                  value={certificatDate}
+                  onChange={(e) => setCertificatDate(e.target.value)}
                   className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-bg-card text-text-main"
                 />
+                {/* Display the date in DD/MM/YYYY format below the input */}
+                <p className="text-sm text-text-muted mt-2">
+                  Date sélectionnée: {fixUTCDateToLocal(certificatDate)}
+                </p>
               </div>
             </div>
 

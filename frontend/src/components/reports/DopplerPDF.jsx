@@ -11,6 +11,7 @@ const DopplerPDF = ({
   dopplerType = "MI",
   dopplerSubType = "normal",
   availableFields = [],
+  boldFields = {}, // Receive bold fields configuration
 }) => {
   const pageRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -18,7 +19,7 @@ const DopplerPDF = ({
   const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   const safe = (text) => (text && text.toString().trim() !== "" ? text : "—");
 
-  const renderList = (items) => {
+  const renderList = (items, isBold = false) => {
     if (!Array.isArray(items)) return safe(items);
 
     const filteredItems = items.filter(
@@ -30,7 +31,13 @@ const DopplerPDF = ({
         {filteredItems.map((item, i) => (
           <li
             key={i}
-            style={{ lineHeight: "1.4", marginBottom: "1mm", fontSize: "11pt" }}
+            style={{
+              lineHeight: "1.4",
+              marginBottom: "1mm",
+              fontSize: isBold ? "12pt" : "11pt",
+              fontWeight: isBold ? "bold" : "normal",
+              color: isBold ? "#000" : "inherit",
+            }}
           >
             - {safe(item)}
           </li>
@@ -266,20 +273,35 @@ const DopplerPDF = ({
             RÉSULTATS
           </h3>
           {/* Dynamic Fields Based on Available Templates */}
-          {fieldsWithContent.map((field) => (
-            <div key={field.key} style={{ marginBottom: "4mm" }}>
-              <h4
-                style={{
-                  fontWeight: "bold",
-                  marginBottom: "2mm",
-                  fontSize: "12pt",
-                }}
+          {fieldsWithContent.map((field) => {
+            const isBold = boldFields[field.key] || false;
+            const isConclusion = field.label
+              .toLowerCase()
+              .includes("conclusion");
+
+            return (
+              <div
+                key={field.key}
+                style={{ marginBottom: isConclusion ? "4mm" : "2mm" }}
               >
-                {field.label} :
-              </h4>
-              {renderList(dopplerForm[field.key] || [])}
-            </div>
-          ))}
+                <h4
+                  style={{
+                    fontWeight: isConclusion ? "bold" : "bold",
+                    marginBottom: "2mm",
+                    fontSize: isConclusion ? "13pt" : "12pt",
+                    color: isConclusion ? "#000" : "inherit",
+                    textDecoration: isConclusion ? "underline" : "none",
+                  }}
+                >
+                  {field.label} :
+                </h4>
+                {renderList(dopplerForm[field.key] || [], isBold)}
+
+                {/* Add extra spacing after conclusion */}
+                {isConclusion && <div style={{ height: "2mm" }} />}
+              </div>
+            );
+          })}
 
           {/* Show message if no fields have content */}
           {fieldsWithContent.length === 0 && (
